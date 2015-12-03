@@ -1,0 +1,3 @@
+---
+postgres_db_name: "{{ postgres_db_user }}"
+postgres_db_user: "{{ site_app_user }}"
