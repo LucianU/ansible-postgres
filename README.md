@@ -9,7 +9,7 @@ Role Variables
 | Variable | Description | Default value |
 |----------|-------------|---------------|
 |`postgres_db`| Database to be created | `{{ postgres_user }}` |
-|`postgres_user` | User to be crated | `none` |
+|`postgres_user` | User to be created | `none` |
 
 Dependencies
 ------------
