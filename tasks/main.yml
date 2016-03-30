@@ -23,3 +23,11 @@
     state: present
   sudo: yes
   sudo_user: postgres
+
+- name: install monit config
+  copy:
+    src: monit.conf
+    dest: /etc/monit/conf.d/postgres
+    mode: 0755
+  when: postgres_install_monit
+  sudo: yes
