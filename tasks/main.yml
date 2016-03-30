@@ -28,6 +28,6 @@
   copy:
     src: monit.conf
     dest: /etc/monit/conf.d/postgres
-    mode: 0755
+    mode: 0600
   when: postgres_install_monit
   sudo: yes
