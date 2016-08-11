@@ -1,2 +1,4 @@
 ---
 postgres_db: "{{ postgres_user }}"
+postgres_install_ppa: false
+postgres_version: 9.3
