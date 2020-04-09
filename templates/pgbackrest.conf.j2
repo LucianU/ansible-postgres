@@ -1,0 +1,19 @@
+[{{ postgres_cluster_name }}]
+pg1-path=/var/lib/postgresql/{{ postgres_version }}/{{ postgres_cluster_name }}
+
+[global]
+repo1-path=/backups
+repo1-retention-diff=1
+repo1-retention-full=2
+repo1-cipher-pass={{ postgres_backups_repo_cipher_pass }}
+repo1-cipher-type=aes-256-cbc
+repo1-s3-bucket={{ postgres_backups_repo_bucket_name }}
+repo1-s3-region={{ postgres_backups_repo_region }}
+repo1-s3-endpoint={{ postgres_backups_repo_endpoint }}
+repo1-s3-key={{ postgres_backups_repo_key }}
+repo1-s3-key-secret={{ postgres_backups_repo_key_secret }}
+repo1-type=s3
+start-fast=y
+
+[global:archive-push]
+compress-level=3

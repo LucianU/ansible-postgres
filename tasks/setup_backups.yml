@@ -1,0 +1,67 @@
+---
+- name: install pgbackrest
+  apt:
+    name: pgbackrest
+    state: present
+  become: yes
+
+- name: create pgbackrest logs dir
+  file:
+    path: /var/log/pgbackrest
+    owner: postgres
+    group: postgres
+    mode: '770'
+    state: directory
+  become: yes
+
+- name: create pgbackrest config dir
+  file:
+    path: /etc/pgbackrest/
+    owner: postgres
+    group: postgres
+    mode: '755'
+    state: directory
+  become: yes
+
+- name: create pgbackrest config file
+  template:
+    src: pgbackrest.conf.j2
+    dest: /etc/pgbackrest/pgbackrest.conf
+    owner: postgres
+    group: postgres
+    mode: '640'
+  become: yes
+
+- name: initialize the remote repository
+  command: pgbackrest --stanza={{ postgres_cluster_name }} --config=/etc/pgbackrest/pgbackrest.conf stanza-create
+  become: yes
+  become_user: postgres
+
+- name: check the configuration
+  command: pgbackrest --stanza={{ postgres_cluster_name }} --config=/etc/pgbackrest/pgbackrest.conf check
+  become: yes
+  become_user: postgres
+
+- name: install crontab for weekly full backup
+  cron:
+    name: pg cluster {{ postgres_cluster_name }} full backup
+    job: pgbackrest --type=full --stanza={{ postgres_cluster_name }} --config=/etc/pgbackrest/pgbackrest.conf backup
+    minute: '30'
+    hour: '6'
+    month: '*'
+    day: '*'
+    weekday: '0'
+    user: postgres
+  become: yes
+
+- name: install crontab for daily differential backup
+  cron:
+    name: pg cluster {{ postgres_cluster_name }} differential backup
+    job: pgbackrest --type=diff --stanza={{ postgres_cluster_name }} --config=/etc/pgbackrest/pgbackrest.conf backup
+    minute: '30'
+    hour: '6'
+    month: '*'
+    day: '*'
+    weekday: '1-6'
+    user: postgres
+  become: yes

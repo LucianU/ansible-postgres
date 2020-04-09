@@ -1,4 +1,6 @@
 ---
 postgres_db: "{{ postgres_user }}"
+postgres_enable_backups: true
 postgres_install_ppa: false
-postgres_version: 9.3
+postgres_version: 11
+postgres_ubuntu_version_name: "bionic"

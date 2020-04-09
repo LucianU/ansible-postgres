@@ -1,0 +1,10 @@
+---
+- name: restart postgres
+  service:
+    name: postgresql
+    state: restarted
+  become: yes
+
+- name: restart postgres cluster
+  command: pg_ctlcluster {{ postgres_version }} {{ postgres_cluster_name }} restart
+  become: yes

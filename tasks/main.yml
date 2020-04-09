@@ -3,37 +3,64 @@
   apt_key:
     url: "https://www.postgresql.org/media/keys/ACCC4CF8.asc"
   when: postgres_install_ppa
-  sudo: yes
+  become: yes
 
 - name: add the repo
   apt_repository:
-    repo: 'deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main'
+    repo: 'deb http://apt.postgresql.org/pub/repos/apt/ {{ postgres_ubuntu_version_name }}-pgdg main'
     state: present
   when: postgres_install_ppa
-  sudo: yes
+  become: yes
 
 - name: install postgres packages
   apt:
-    name: "{{ item }}"
-    state: installed
-  with_items:
-    - postgresql-{{ postgres_version }}
-    - postgresql-server-dev-{{ postgres_version }}
-  sudo: yes
+    name:
+      - "postgresql-{{ postgres_version }}"
+      - python3-psycopg2 # Ansible needs it to interact with PostgreSQL
+    state: present
+  become: yes
+
+- name: install config file
+  template:
+    src: postgresql.conf.j2
+    dest: /etc/postgresql/{{ postgres_version }}/{{ postgres_cluster_name }}/postgresql.conf
+  become: yes
+  become_user: postgres
+  notify:
+    - restart postgres cluster
+
+# We need to restart PostgreSQL now, because we need to have the changes picked up before another task runs
+- meta: flush_handlers
 
 - name: create database role
   postgresql_user:
     name: "{{ postgres_user }}"
+    password: "{{ postgres_user_password }}"
+    encrypted: yes
     role_attr_flags: NOSUPERUSER,NOCREATEDB
     state: present
-  sudo: yes
-  sudo_user: postgres
+  become: yes
+  become_user: postgres
 
 - name: create database
   postgresql_db:
     db: "{{ postgres_db}}"
     owner: "{{ postgres_user }}"
     state: present
-  sudo: yes
-  sudo_user: postgres
+  become: yes
+  become_user: postgres
 
+- name: grant web app access to database
+  postgresql_pg_hba:
+    dest: /etc/postgresql/{{ postgres_version }}/main/pg_hba.conf
+    contype: host
+    users: "{{ postgres_user }}"
+    source: "{{ postgres_whitelist_ip }}"
+    databases: "{{ postgres_db }}"
+    method: md5
+  become: yes
+  notify:
+    - restart postgres
+
+- import_tasks: setup_backups.yml
+  when: postgres_enable_backups
