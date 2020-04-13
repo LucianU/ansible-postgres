@@ -61,6 +61,7 @@
   become: yes
   notify:
     - restart postgres
+  when: postgres_whitelist_ip is defined
 
 - import_tasks: setup_backups.yml
   when: postgres_enable_backups
